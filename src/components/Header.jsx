@@ -8,6 +8,7 @@ const CORE_LINKS = [
   { to: '/gallery',  label: 'Gallery' },
   { to: '/services', label: 'Services' },
   { to: '/booking',  label: 'Book' },
+  { to: '/host',     label: 'Host' },
 ];
 
 export default function Header() {
@@ -33,17 +34,18 @@ export default function Header() {
               {l.label}
             </NavLink>
           ))}
+          {tools.map(t => (
+            <NavLink key={t.slug} to={`/tools/${t.slug}`}
+              className={({ isActive }) => isActive ? 'text-gold' : 'text-muted hover:text-gold transition'}>
+              {t.label}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="flex items-center gap-4">
           <Link to="/booking" className="hidden md:block text-xs uppercase tracking-widest text-gold hover:underline">
             Book a Session
           </Link>
-          <NavLink to="/host"
-            className={({ isActive }) =>
-              `hidden md:block text-base leading-none transition ${isActive ? 'text-gold' : 'text-white/20 hover:text-white/50'}`}
-            title="Host">⬡
-          </NavLink>
           <button onClick={() => setOpen(o => !o)} aria-label="Menu" className="flex flex-col gap-1.5 p-2">
             <span className={`h-0.5 w-6 bg-gold transition duration-300 ${open ? 'rotate-45 translate-y-2' : ''}`} />
             <span className={`h-0.5 w-6 bg-gold transition duration-300 ${open ? 'opacity-0' : ''}`} />
