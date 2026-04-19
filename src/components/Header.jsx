@@ -8,7 +8,6 @@ const CORE_LINKS = [
   { to: '/gallery',  label: 'Gallery' },
   { to: '/services', label: 'Services' },
   { to: '/booking',  label: 'Book' },
-  { to: '/host',     label: 'Host' },
 ];
 
 export default function Header() {
@@ -62,7 +61,7 @@ export default function Header() {
             <NavLink key={l.to} to={l.to} onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 `block px-6 py-4 text-sm uppercase tracking-widest border-b border-white/5 transition ${
-                  isActive ? 'text-gold' : 'text-offwhite hover:text-gold'}`}>
+                  isActive ? 'text-gold' : 'text-offwhite hover:text-gold'}`}> 
               {l.label}
             </NavLink>
           ))}
@@ -75,19 +74,11 @@ export default function Header() {
             <NavLink key={t.slug} to={`/tools/${t.slug}`} onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 `flex items-center justify-between px-6 py-4 border-b border-white/5 transition ${
-                  isActive ? 'text-gold' : 'text-offwhite hover:text-gold'}`}>
+                  isActive ? 'text-gold' : 'text-offwhite hover:text-gold'}`}> 
               <span className="text-sm uppercase tracking-widest">{t.label}</span>
               {t.desc && <span className="text-xs text-muted ml-4">{t.desc}</span>}
             </NavLink>
           ))}
-
-          {/* Host */}
-          <NavLink to="/host" onClick={() => setOpen(false)}
-            className={({ isActive }) =>
-              `block px-6 py-4 text-sm uppercase tracking-widest border-t border-white/10 mt-2 transition ${
-                isActive ? 'text-gold' : 'text-muted hover:text-offwhite'}`}>
-            Host ⬡
-          </NavLink>
         </nav>
       )}
     </header>
