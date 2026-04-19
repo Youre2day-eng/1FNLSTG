@@ -267,8 +267,8 @@ label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase
     <!-- ── STEP: Login ── -->
     <div id="ls-login">
       <div class="f">
-        <label>Email</label>
-        <input type="email" id="lpemail" autocomplete="email" placeholder="you@gmail.com"
+        <label>Username</label>
+        <input type="text" id="lpusername" autocomplete="username" placeholder="your username"
           onkeydown="if(event.key==='Enter')document.getElementById('lpass').focus()">
       </div>
       <div class="f">
@@ -277,9 +277,6 @@ label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase
           onkeydown="if(event.key==='Enter')doLogin()">
       </div>
       <button class="lbtn" id="login-submit-btn" onclick="doLogin()">Login →</button>
-      <div style="text-align:center;margin-top:1rem;">
-        <button onclick="showForgot()" style="background:none;border:none;color:var(--muted2);font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;font-family:var(--mono);text-decoration:underline;">Forgot Password?</button>
-      </div>
     </div>
 
     <!-- ── STEP: Forgot — enter email ── -->
@@ -1302,16 +1299,15 @@ let _encKey = null; // CryptoKey, set after login
 
 async function _deriveEncKey(){
   if(_encKey) return _encKey;
-  // Derive from creds hash + a device salt stored in localStorage
+  const token = sessionStorage.getItem('fsp_admin_token');
+  if(!token) return null;
   let salt = localStorage.getItem('fsp_dsalt');
   if(!salt){
     salt = Array.from(crypto.getRandomValues(new Uint8Array(16)))
       .map(b=>b.toString(16).padStart(2,'0')).join('');
     localStorage.setItem('fsp_dsalt', salt);
   }
-  const creds = _getCreds();
-  if(!creds) return null;
-  const raw = creds.pwHash + salt;
+  const raw = token + salt;
   const keyMaterial = await crypto.subtle.importKey(
     'raw', new TextEncoder().encode(raw), 'PBKDF2', false, ['deriveKey']
   );
@@ -1470,20 +1466,9 @@ function _localStorageWorks(){
   catch(e){ return false; }
 }
 function initLogin() {
-  if(!_localStorageWorks()){
-    // Safari is blocking localStorage (file:// restriction) — show a clear message
-    document.body.innerHTML='<div style="position:fixed;inset:0;background:#07080c;display:flex;align-items:center;justify-content:center;font-family:system-ui;"><div style="max-width:420px;padding:2rem;border:1px solid #333;border-radius:8px;text-align:center;"><div style="font-size:2rem;font-weight:900;letter-spacing:3px;color:#fff;border:2px solid #fff;padding:.3rem 1.5rem;display:inline-block;margin-bottom:1rem;">FSP.</div><div style="color:#c9a84c;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.75rem;">Storage Blocked</div><div style="color:#aaa;font-size:12px;line-height:1.8;margin-bottom:1.25rem;">Safari is blocking local storage for this file.<br>To fix: <strong style="color:#fff;">Safari → Settings → Privacy</strong><br>and uncheck <strong style="color:#fff;">"Block all cookies"</strong>,<br>or open the file in <strong style="color:#fff;">Chrome or Firefox</strong>.</div></div></div>';
-    return;
-  }
-  if(!_credsExist()){
-    g('loginScreen').style.display='none';
-    g('setupScreen').style.display='flex';
-    setTimeout(()=>{ const e=g('setup-email'); if(e)e.focus(); },80);
-  } else {
-    _loginStep('ls-login');
-    if(isLockedOut()) startLockoutCountdown();
-    else setTimeout(()=>{ const e=g('lpemail'); if(e)e.focus(); },80);
-  }
+  // Auth is handled via /api/auth against Cloudflare KV — no localStorage creds needed
+  _loginStep('ls-login');
+  setTimeout(()=>{ const e=g('lpusername'); if(e)e.focus(); },80);
 }
 
 // setLoginTab is deprecated — login is now a single email+password form
@@ -1604,70 +1589,41 @@ function startLockoutCountdown(){
 }
 
 async function doLogin(){
-  const emailInput = (g('lpemail')||{}).value.trim().toLowerCase();
-  const passInput  = (g('lpass')||{}).value;
-  const err        = g('lerr');
+  const userInput = ((g('lpusername')||{}).value||'').trim();
+  const passInput = (g('lpass')||{}).value;
+  const err       = g('lerr');
+  const btn       = g('login-submit-btn');
 
-  // Check if currently locked out
-  if(isLockedOut()){
-    startLockoutCountdown();
-    return;
+  if(!userInput || !passInput){
+    err.textContent='Enter your username and password.';err.classList.add('show');return;
   }
 
-  if(!emailInput){
-    err.textContent='Enter your email.';err.classList.add('show');
-    if(g('lpemail'))g('lpemail').focus();return;
-  }
-  const creds = _getCreds();
-  if(!creds){
-    err.textContent='No account found in this browser. Open this file fresh to run setup, or check you are using the same browser where you created the account.';
-    err.classList.add('show');return;
-  }
-
-  // Hash FIRST, then clear inputs
-  const [inEmailHash, inPassHash] = await Promise.all([
-    sha256(emailInput),
-    sha256(passInput)
-  ]);
-
-  // Clear inputs after hashing
-  if(g('lpass'))g('lpass').value='';
-  if(g('lpemail'))g('lpemail').value='';
-
-  console.log('emailMatch:', inEmailHash===creds.emailHash, 'passMatch:', inPassHash===creds.pwHash);
-
-  if(inEmailHash !== creds.emailHash || inPassHash !== creds.pwHash){
-    // Increment fail counter
-    const cfg   = getLockoutCfg();
-    const state = getLockoutState();
-    state.fails = (state.fails||0) + 1;
-
-    if(state.fails >= cfg.max){
-      // Trigger lockout
-      state.until = Date.now() + cfg.duration * 1000;
-      state.fails = 0;
-      setLockoutState(state);
-      // Notify host
-      notifyLoginAttempt('lockout', 'lockout triggered after '+cfg.max+' failures', emailInput);
-      err.classList.remove('show');
-      startLockoutCountdown();
-    } else {
-      setLockoutState(state);
-      const remaining = cfg.max - state.fails;
-      notifyLoginAttempt('failed','password — attempt '+(state.fails)+'/'+cfg.max, emailInput);
-      err.textContent='Email or password incorrect. '+remaining+' attempt'+(remaining===1?'':'s')+' remaining.';
-      err.classList.add('show');
-      if(g('lpemail'))g('lpemail').focus();
-    }
-    return;
-  }
-
-  // Success — reset fail counter
-  setLockoutState({fails:0,until:0});
+  if(btn){ btn.disabled=true; btn.textContent='Checking…'; }
   err.classList.remove('show');
-  notifyLoginAttempt('success','password',emailInput);
-  _issueToken();
-  enterDashboard();
+
+  try {
+    const r = await fetch('/api/auth', {
+      method: 'POST',
+      headers: {'content-type':'application/json'},
+      body: JSON.stringify({ username: userInput, password: passInput })
+    });
+    const d = await r.json();
+    if(btn){ btn.disabled=false; btn.textContent='Login →'; }
+    if(!d.ok){
+      err.textContent = d.error || 'Wrong credentials.';err.classList.add('show');
+      if(g('lpass'))g('lpass').value='';
+      return;
+    }
+    // Store token for protected API calls
+    sessionStorage.setItem('fsp_admin_token', d.token);
+    if(g('lpusername'))g('lpusername').value='';
+    if(g('lpass'))g('lpass').value='';
+    _issueToken();
+    enterDashboard();
+  } catch(e) {
+    if(btn){ btn.disabled=false; btn.textContent='Login →'; }
+    err.textContent='Network error. Try again.';err.classList.add('show');
+  }
 }
 
 // ── OTP ──────────────────────────────────────────────────────
@@ -1905,14 +1861,15 @@ function enterDashboard(){
 }
 
 function doLogout(){
+  sessionStorage.removeItem('fsp_admin_token');
   g('loginScreen').style.display='flex';g('app').style.display='none';
   _SA.clear();
   _wipeCache(); // clear in-memory data + enc key
   if(g('lpass'))g('lpass').value='';
-  if(g('lpemail'))g('lpemail').value='';
+  if(g('lpusername'))g('lpusername').value='';
   _loginStep('ls-login');
   g('lerr').classList.remove('show');
-  setTimeout(()=>{ const le=g('lpemail'); if(le)le.focus(); },80);
+  setTimeout(()=>{ const le=g('lpusername'); if(le)le.focus(); },80);
 }
 
 
