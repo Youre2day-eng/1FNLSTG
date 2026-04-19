@@ -39,7 +39,7 @@ export async function onRequestGet({ request, env }) {
     return json({ ok: false, error: 'Unauthorized.' }, 401);
   }
   try {
-    const raw = await env.CONFIG.get(BOOKINGS_KEY);
+    const raw = await env.ADMIN_TOKEN.get(BOOKINGS_KEY);
     const bookings = raw ? JSON.parse(raw) : [];
     return json({ ok: true, bookings });
   } catch (e) {
@@ -55,7 +55,7 @@ export async function onRequestPost({ request, env }) {
       return json({ ok: false, error: 'Invalid booking payload.' }, 400);
     }
 
-    const raw = await env.CONFIG.get(BOOKINGS_KEY);
+    const raw = await env.ADMIN_TOKEN.get(BOOKINGS_KEY);
     const bookings = raw ? JSON.parse(raw) : [];
 
     const booking = {
@@ -66,7 +66,7 @@ export async function onRequestPost({ request, env }) {
     };
 
     bookings.push(booking);
-    await env.CONFIG.put(BOOKINGS_KEY, JSON.stringify(bookings));
+    await env.ADMIN_TOKEN.put(BOOKINGS_KEY, JSON.stringify(bookings));
 
     return json({ ok: true, booking });
   } catch (e) {
@@ -88,7 +88,7 @@ export async function onRequestPatch({ request, env }) {
       return json({ ok: false, error: 'status must be "approved" or "denied".' }, 400);
     }
 
-    const raw = await env.CONFIG.get(BOOKINGS_KEY);
+    const raw = await env.ADMIN_TOKEN.get(BOOKINGS_KEY);
     const bookings = raw ? JSON.parse(raw) : [];
 
     const idx = bookings.findIndex((b) => b.id === id);
@@ -97,7 +97,7 @@ export async function onRequestPatch({ request, env }) {
     }
 
     bookings[idx] = { ...bookings[idx], status };
-    await env.CONFIG.put(BOOKINGS_KEY, JSON.stringify(bookings));
+    await env.ADMIN_TOKEN.put(BOOKINGS_KEY, JSON.stringify(bookings));
 
     return json({ ok: true, booking: bookings[idx] });
   } catch (e) {

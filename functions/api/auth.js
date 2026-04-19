@@ -26,7 +26,7 @@ export async function onRequestPost({ request, env }) {
     const { username, password } = await request.json();
     if (!username || !password) return json({ ok: false, error: 'Username and password required.' }, 400);
 
-    const raw = await env.CONFIG.get(STATE_KEY);
+    const raw = await env.ADMIN_TOKEN.get(STATE_KEY);
     const state = raw ? JSON.parse(raw) : {};
 
     // Check whitelist if it exists
@@ -41,7 +41,8 @@ export async function onRequestPost({ request, env }) {
 
     if (!validUser || !validPass) return json({ ok: false, error: 'Wrong credentials.' }, 401);
 
-    return json({ ok: true, token: env.ADMIN_TOKEN });
+    // Return state.pw as the bearer token (matches what state.js validates against)
+    return json({ ok: true, token: state.pw });
   } catch (e) {
     return json({ ok: false, error: 'Server error.' }, 500);
   }
