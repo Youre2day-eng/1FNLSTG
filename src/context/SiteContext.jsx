@@ -14,7 +14,13 @@ export function SiteProvider({ children }) {
 
   useEffect(() => {
     api.getState()
-      .then(s => { setState({ ...DF, ...s }); setLoaded(true); })
+      .then(s => {
+        // Always preserve toolPages from DF if KV state doesn't have them yet
+        const merged = { ...DF, ...s };
+        if (!s.toolPages || !s.toolPages.length) merged.toolPages = DF.toolPages;
+        setState(merged);
+        setLoaded(true);
+      })
       .catch(() => setLoaded(true));
   }, []);
 

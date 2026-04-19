@@ -14,8 +14,8 @@ export default function Header() {
   const [open, setOpen] = useState(false);
   const { state } = useSite();
 
-  // Merge KV toolPages over defaults so tools always show even before KV loads
-  const tools = (state.toolPages || DF.toolPages).filter(t => t.inNav);
+  // Always use DF.toolPages as base — KV state may not have toolPages yet
+  const tools = (state.toolPages && state.toolPages.length ? state.toolPages : DF.toolPages).filter(t => t.inNav);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur border-b border-white/5">
