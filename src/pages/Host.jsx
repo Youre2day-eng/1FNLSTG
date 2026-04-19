@@ -1,4 +1,3 @@
-// Host — redirects to the standalone host dashboard app
 import { useEffect } from 'react';
 
 export default function Host() {

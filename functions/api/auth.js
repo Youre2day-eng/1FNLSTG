@@ -1,22 +1,14 @@
 // POST /api/auth
-// Body: { username: string, password: string }
-// Checks against ADMIN_USER + ADMIN_TOKEN env vars in Cloudflare.
-// Returns { ok: true, token } on success.
+// Checks username + password against KV state.pw and state.adminUser
+// Whitelist: state.whitelist = ["username1", "username2"]
 
-export async function onRequestPost({ request, env }) {
-  try {
-    const { username, password } = await request.json();
-    if (!username || !password) return json({ ok: false, error: 'Username and password required.' }, 400);
+const STATE_KEY = 'fsp_state';
 
-    const validUser = username === (env.ADMIN_USER || 'host');
-    const validPass = password === env.ADMIN_TOKEN;
-
-    if (!validUser || !validPass) return json({ ok: false, error: 'Wrong credentials.' }, 401);
-
-    return json({ ok: true, token: env.ADMIN_TOKEN });
-  } catch (e) {
-    return json({ ok: false, error: 'Server error.' }, 500);
-  }
+function json(body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'content-type': 'application/json', 'access-control-allow-origin': '*' },
+  });
 }
 
 export async function onRequestOptions() {
@@ -29,12 +21,28 @@ export async function onRequestOptions() {
   });
 }
 
-function json(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      'content-type': 'application/json',
-      'access-control-allow-origin': '*',
-    },
-  });
+export async function onRequestPost({ request, env }) {
+  try {
+    const { username, password } = await request.json();
+    if (!username || !password) return json({ ok: false, error: 'Username and password required.' }, 400);
+
+    const raw = await env.CONFIG.get(STATE_KEY);
+    const state = raw ? JSON.parse(raw) : {};
+
+    // Check whitelist if it exists
+    const whitelist = state.whitelist || [];
+    if (whitelist.length > 0 && !whitelist.includes(username)) {
+      return json({ ok: false, error: 'Access denied.' }, 403);
+    }
+
+    // Check credentials
+    const validUser = username === (state.adminUser || 'host');
+    const validPass = password === state.pw;
+
+    if (!validUser || !validPass) return json({ ok: false, error: 'Wrong credentials.' }, 401);
+
+    return json({ ok: true, token: env.ADMIN_TOKEN });
+  } catch (e) {
+    return json({ ok: false, error: 'Server error.' }, 500);
+  }
 }

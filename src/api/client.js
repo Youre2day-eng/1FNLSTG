@@ -38,15 +38,18 @@ export const api = {
 
   // ── Global site state (Cloudflare KV) ────────────────────────────────────
   // Any visitor can read. Only host (with token) can write.
-  // State includes: b1, b2, tag, loc, cats, svcs, imgs, ts, cd, creds,
-  //                 phone, email, ig, pt, dep, pay, pyn, pw, pages, etc.
-  getState: () => req('/api/state').then(j => j.state || {}),
+  getState: () => req('/api/state').then((j) => j.state || {}),
   saveState: (state) => req('/api/state', { method: 'POST', body: state, auth: true }),
 
-  // ── Music tracks ─────────────────────────────────────────────────────────
-  getTracks: () => req('/api/tracks').then(j => j.tracks || []),
+  // ── Bookings ──────────────────────────────────────────────────────────────
+  // GET all bookings (protected)
+  getBookings: () => req('/api/bookings', { auth: true }).then((j) => j.bookings || []),
+  // POST new booking (public) — receives payload, backend assigns id/timestamp/status
+  submitBooking: (payload) => req('/api/bookings', { method: 'POST', body: payload }),
+  // PATCH booking status: { id, status } where status is "approved" or "denied" (protected)
+  updateBooking: (id, status) =>
+    req('/api/bookings', { method: 'PATCH', body: { id, status }, auth: true }),
 
-  // ── Bookings / quotes ─────────────────────────────────────────────────────
-  submitBooking: (payload) => req('/api/send-booking', { method: 'POST', body: payload }),
-  submitQuote:   (payload) => req('/api/send-quote',   { method: 'POST', body: payload }),
+  // ── Music tracks ─────────────────────────────────────────────────────────
+  getTracks: () => req('/api/tracks').then((j) => j.tracks || []),
 };

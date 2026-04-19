@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FSP · Setup</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#060608;color:#f0eade;font-family:'JetBrains Mono',monospace;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+.box{width:100%;max-width:380px;border:1px solid rgba(255,255,255,.08);padding:2.5rem}
+h1{font-size:2rem;color:#c9a84c;margin-bottom:.5rem;font-family:'Bebas Neue',sans-serif;letter-spacing:2px}
+p{font-size:11px;color:#52504a;margin-bottom:2rem;line-height:1.6}
+label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#52504a;margin-bottom:.35rem}
+input{width:100%;background:#0f1118;border:1px solid rgba(255,255,255,.08);color:#f0eade;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;margin-bottom:1rem}
+input:focus{border-color:#c9a84c}
+.bootstrap{font-size:10px;color:#52504a;margin-bottom:1.5rem;line-height:1.6}
+.bootstrap span{color:#f0eade}
+button{width:100%;padding:12px;background:#c9a84c;color:#000;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;border:none;cursor:pointer}
+button:hover{background:#d4b04f}
+#msg{margin-top:1rem;font-size:11px;text-align:center;min-height:20px}
+.ok{color:#22c55e}.err{color:#ef4444}
+</style>
+</head>
+<body>
+<div class="box">
+  <h1>FSP Setup</h1>
+  <p>Set your host username and password. Only works once — after that, change credentials from the Host dashboard.</p>
+
+  <label>Bootstrap Token</label>
+  <input type="password" id="bootstrap" placeholder="Your ADMIN_TOKEN from Cloudflare">
+  <p class="bootstrap">This is the <span>ADMIN_TOKEN</span> env var you set in Cloudflare. Used once to authorize setup.</p>
+
+  <label>Username</label>
+  <input type="text" id="username" placeholder="e.g. host" autocomplete="username">
+
+  <label>Password</label>
+  <input type="password" id="password" placeholder="Min 6 characters" autocomplete="new-password">
+
+  <button onclick="setup()">Set Credentials</button>
+  <div id="msg"></div>
+</div>
+<script>
+async function setup() {
+  const bootstrapToken = document.getElementById('bootstrap').value.trim();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const msg = document.getElementById('msg');
+  msg.textContent = 'Saving…'; msg.className = '';
+  try {
+    const r = await fetch('/api/init', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ bootstrapToken, username, password })
+    });
+    const d = await r.json();
+    if (d.ok) {
+      msg.textContent = '✓ Done. Go to /host to log in.'; msg.className = 'ok';
+    } else {
+      msg.textContent = d.error; msg.className = 'err';
+    }
+  } catch(e) {
+    msg.textContent = 'Network error.'; msg.className = 'err';
+  }
+}
+</script>
+</body>
+</html>
