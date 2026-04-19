@@ -1,20 +1,32 @@
 // POST /api/auth
-// Body: { password: string }
-// Checks password against ADMIN_TOKEN env var.
-// Returns { ok: true, token } on success so the client can store it for writes.
+// Body: { username: string, password: string }
+// Checks against ADMIN_USER + ADMIN_TOKEN env vars in Cloudflare.
+// Returns { ok: true, token } on success.
 
 export async function onRequestPost({ request, env }) {
   try {
-    const { password } = await request.json();
-    if (!password) return json({ ok: false, error: 'No password.' }, 400);
+    const { username, password } = await request.json();
+    if (!username || !password) return json({ ok: false, error: 'Username and password required.' }, 400);
 
-    const valid = password === env.ADMIN_TOKEN;
-    if (!valid) return json({ ok: false, error: 'Wrong password.' }, 401);
+    const validUser = username === (env.ADMIN_USER || 'host');
+    const validPass = password === env.ADMIN_TOKEN;
+
+    if (!validUser || !validPass) return json({ ok: false, error: 'Wrong credentials.' }, 401);
 
     return json({ ok: true, token: env.ADMIN_TOKEN });
   } catch (e) {
     return json({ ok: false, error: 'Server error.' }, 500);
   }
+}
+
+export async function onRequestOptions() {
+  return new Response(null, {
+    headers: {
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'POST, OPTIONS',
+      'access-control-allow-headers': 'content-type',
+    },
+  });
 }
 
 function json(body, status = 200) {

@@ -38,13 +38,14 @@ const PANELS = [
   { id: 'services',  label: 'Services' },
   { id: 'gallery',   label: 'Gallery' },
   { id: 'booking',   label: 'Booking' },
-  { id: 'pages',     label: 'Pages' },
+  { id: 'tools',     label: 'Tools & Pages' },
   { id: 'cypher',    label: 'Cypher' },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
 export default function Host() {
   const [authed, setAuthed]   = useState(api.isLoggedIn());
+  const [user,   setUser]     = useState('');
   const [pw,     setPw]       = useState('');
   const [err,    setErr]      = useState('');
   const [saving, setSaving]   = useState(false);
@@ -68,12 +69,13 @@ export default function Host() {
   async function login(e) {
     e.preventDefault();
     setErr('');
+    if (!user.trim()) { setErr('Username required.'); return; }
     try {
-      await api.login(pw);
+      await api.login(user.trim(), pw);
       setAuthed(true);
-      setPw('');
+      setPw(''); setUser('');
     } catch (ex) {
-      setErr(ex.message || 'Wrong password.');
+      setErr(ex.message || 'Wrong credentials.');
     }
   }
 
@@ -109,11 +111,20 @@ export default function Host() {
           <h1 className="font-display text-5xl text-gold mb-8">Host ⬡</h1>
           <div className="flex flex-col gap-3">
             <input
+              type="text"
+              value={user}
+              onChange={e => setUser(e.target.value)}
+              placeholder="Username"
+              autoFocus
+              autoComplete="username"
+              className="w-full px-4 py-3 bg-card border border-white/10 text-offwhite focus:border-gold/50 outline-none"
+            />
+            <input
               type="password"
               value={pw}
               onChange={e => setPw(e.target.value)}
-              placeholder="Enter password"
-              autoFocus
+              placeholder="Password"
+              autoComplete="current-password"
               className="w-full px-4 py-3 bg-card border border-white/10 text-offwhite focus:border-gold/50 outline-none"
             />
             {err && <div className="text-red-400 text-xs font-mono">{err}</div>}
@@ -190,7 +201,7 @@ export default function Host() {
         {panel === 'services'  && <PanelServices  D={D} upd={upd} />}
         {panel === 'gallery'   && <PanelGallery   D={D} upd={upd} />}
         {panel === 'booking'   && <PanelBooking   D={D} upd={upd} />}
-        {panel === 'pages'     && <PanelPages     D={D} upd={upd} />}
+        {panel === 'tools'     && <PanelTools     D={D} upd={upd} />}
         {panel === 'cypher'    && <PanelCypher    D={D} upd={upd} showToast={showToast} save={save} />}
       </main>
 
@@ -436,64 +447,102 @@ function PanelBooking({ D, upd }) {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// PAGES — add custom pages to the site
+// TOOLS & PAGES — manage tool pages in the hamburger nav
 // ══════════════════════════════════════════════════════════════════════════════
-function PanelPages({ D, upd }) {
-  const pages = D.pages || [];
+function PanelTools({ D, upd }) {
+  const tools = D.toolPages || [];
 
-  function addPage() {
-    upd('pages', [...pages, { slug: '', title: '', body: '', inNav: false }]);
+  function updTool(i, key, val) {
+    const arr = [...tools];
+    arr[i] = { ...arr[i], [key]: val };
+    upd('toolPages', arr);
   }
 
-  function updPage(i, key, val) {
-    const arr = [...pages];
-    arr[i] = { ...arr[i], [key]: val };
-    upd('pages', arr);
+  function addTool() {
+    upd('toolPages', [...tools, {
+      id: Date.now().toString(),
+      slug: '',
+      label: 'New Tool',
+      src: '',
+      inNav: true,
+      desc: '',
+    }]);
   }
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
       <div>
-        <h2 className="font-display text-4xl text-gold">Pages</h2>
-        <p className="text-xs text-muted mt-1">Add custom content pages. Each page gets its own URL and can appear in the nav.</p>
+        <h2 className="font-display text-4xl text-gold">Tools & Pages</h2>
+        <p className="text-xs text-muted mt-1 leading-relaxed">
+          Each tool appears in the hamburger menu under "Free Tools" when enabled.
+          Built-in tools live at <span className="font-mono text-offwhite">/tools/filename.html</span> —
+          you can also point to any external URL. Toggle off to hide without deleting.
+        </p>
       </div>
-      {!pages.length && (
-        <div className="border border-white/5 p-8 text-center text-xs text-muted font-mono uppercase">
-          No custom pages yet.
-        </div>
-      )}
-      {pages.map((p, i) => (
-        <Card key={i} title={p.title || 'Untitled Page'} sub={p.slug ? `/${p.slug}` : 'No slug set'}>
+
+      {tools.map((t, i) => (
+        <Card key={t.id} title={t.label || 'Untitled'} sub={t.inNav ? `✓ Visible in nav · /tools/${t.slug}` : `Hidden · /tools/${t.slug}`}>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Page Title" value={p.title} onChange={v => updPage(i, 'title', v)} placeholder="e.g. About" />
-            <Field label="URL Slug" value={p.slug} onChange={v => updPage(i, 'slug', v.toLowerCase().replace(/\s+/g, '-'))} placeholder="about" mono />
+            <Field label="Nav Label" value={t.label} onChange={v => updTool(i, 'label', v)} placeholder="e.g. Cypher" />
+            <Field label="URL Slug" value={t.slug} onChange={v => updTool(i, 'slug', v.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,''))} placeholder="cypher" mono />
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-muted uppercase tracking-widest">Page Content</label>
-            <textarea
-              value={p.body || ''}
-              onChange={e => updPage(i, 'body', e.target.value)}
-              rows={6}
-              placeholder="Write your page content here..."
-              className="w-full px-3 py-2 bg-deep border border-white/10 text-offwhite text-sm outline-none resize-y"
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-xs text-muted cursor-pointer">
-              <input type="checkbox" checked={p.inNav || false}
-                onChange={e => updPage(i, 'inNav', e.target.checked)}
-                className="accent-gold" />
-              Show in navigation
+          <Field label="Source URL or Path" value={t.src} onChange={v => updTool(i, 'src', v)} placeholder="/tools/cypher.html or https://..." mono />
+          <Field label="Short Description (shown in nav)" value={t.desc} onChange={v => updTool(i, 'desc', v)} placeholder="Beat player & store" />
+          <div className="flex items-center justify-between pt-1">
+            <label className="flex items-center gap-2 text-xs text-muted cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={t.inNav || false}
+                onChange={e => updTool(i, 'inNav', e.target.checked)}
+                className="accent-gold w-3.5 h-3.5"
+              />
+              Show in hamburger nav
             </label>
-            <button onClick={() => upd('pages', pages.filter((_, j) => j !== i))}
-              className="text-xs text-red-400 hover:underline">Remove Page</button>
+            <div className="flex items-center gap-4">
+              <a
+                href={`/tools/${t.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-gold hover:underline"
+              >
+                Preview ↗
+              </a>
+              <button
+                onClick={() => upd('toolPages', tools.filter((_, j) => j !== i))}
+                className="text-xs text-red-400 hover:underline"
+              >
+                Remove
+              </button>
+            </div>
           </div>
         </Card>
       ))}
-      <button onClick={addPage}
-        className="px-6 py-3 border border-gold/30 text-xs uppercase tracking-widest text-gold hover:bg-gold/5 transition text-left">
-        + Add New Page
+
+      <button
+        onClick={addTool}
+        className="px-6 py-3 border border-gold/30 text-xs uppercase tracking-widest text-gold hover:bg-gold/5 transition text-left"
+      >
+        + Add Tool or Page
       </button>
+
+      <Card title="Built-in Tools" sub="Files already in /public/tools/ — use these paths as-is">
+        <div className="flex flex-col gap-2 font-mono text-xs">
+          {[
+            ['/tools/cypher.html',    'Beat player & store'],
+            ['/tools/aisle-lens.html','Wedding photography community'],
+            ['/tools/lexsearch.html', 'US legal research'],
+            ['/tools/gallery.html',   'Premium gallery viewer'],
+          ].map(([path, desc]) => (
+            <div key={path} className="flex items-center justify-between border border-white/5 px-3 py-2">
+              <span className="text-offwhite">{path}</span>
+              <span className="text-muted ml-4">{desc}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-muted leading-relaxed">
+          To update a tool, replace its HTML file in your repo under <span className="font-mono text-offwhite">public/tools/</span> and push. Cloudflare deploys automatically.
+        </p>
+      </Card>
     </div>
   );
 }

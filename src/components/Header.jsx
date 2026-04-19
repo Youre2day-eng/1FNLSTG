@@ -1,27 +1,34 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { useSite } from '../context/SiteContext.jsx';
 
-const LINKS = [
-  { to: '/', label: 'Home' },
-  { to: '/gallery', label: 'Gallery' },
+const CORE_LINKS = [
+  { to: '/',         label: 'Home' },
+  { to: '/gallery',  label: 'Gallery' },
   { to: '/services', label: 'Services' },
-  { to: '/booking', label: 'Book' },
+  { to: '/booking',  label: 'Book' },
 ];
 
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const { state } = useSite();
+
+  // Tool pages enabled for nav
+  const tools = (state.toolPages || []).filter(t => t.inNav);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur border-b border-white/5">
       <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="flex flex-col leading-none">
+
+        {/* Logo */}
+        <Link to="/" className="flex flex-col leading-none" onClick={() => setOpen(false)}>
           <span className="italic text-sm tracking-wider">FINAL STAGE</span>
           <span className="italic text-xs text-muted">Productions</span>
         </Link>
 
-        {/* Desktop nav */}
+        {/* Desktop nav — core links only */}
         <nav className="hidden md:flex gap-8 text-xs uppercase tracking-widest">
-          {LINKS.map(l => (
+          {CORE_LINKS.map(l => (
             <NavLink
               key={l.to}
               to={l.to}
@@ -35,6 +42,7 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
+          {/* Book CTA — desktop */}
           <Link
             to="/booking"
             className="hidden md:block text-xs uppercase tracking-widest text-gold hover:underline"
@@ -42,18 +50,18 @@ export default function Header() {
             Book a Session
           </Link>
 
-          {/* Subtle host lock — desktop only */}
+          {/* Host — subtle, desktop */}
           <NavLink
             to="/host"
             className={({ isActive }) =>
-              `hidden md:block text-base leading-none transition ${isActive ? 'text-gold' : 'text-white/20 hover:text-white/60'}`
+              `hidden md:block text-base leading-none transition ${isActive ? 'text-gold' : 'text-white/20 hover:text-white/50'}`
             }
             title="Host"
           >
             ⬡
           </NavLink>
 
-          {/* Hamburger — all screen sizes */}
+          {/* Hamburger — all sizes */}
           <button
             onClick={() => setOpen(o => !o)}
             aria-label="Menu"
@@ -66,29 +74,59 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Drawer — all screen sizes */}
+      {/* Drawer */}
       {open && (
-        <nav className="border-t border-white/5 bg-black/95">
-          {LINKS.map(l => (
+        <nav className="border-t border-white/5 bg-black/95 max-h-[80vh] overflow-y-auto">
+
+          {/* Core links */}
+          {CORE_LINKS.map(l => (
             <NavLink
               key={l.to}
               to={l.to}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `block px-6 py-4 text-sm uppercase tracking-widest border-b border-white/5 ${
-                  isActive ? 'text-gold' : 'text-offwhite hover:text-gold transition'
+                `block px-6 py-4 text-sm uppercase tracking-widest border-b border-white/5 transition ${
+                  isActive ? 'text-gold' : 'text-offwhite hover:text-gold'
                 }`
               }
             >
               {l.label}
             </NavLink>
           ))}
+
+          {/* Free tools section */}
+          {tools.length > 0 && (
+            <>
+              <div className="px-6 pt-5 pb-2 text-xs uppercase tracking-widest text-muted font-mono">
+                Free Tools
+              </div>
+              {tools.map(t => (
+                <NavLink
+                  key={t.slug}
+                  to={`/tools/${t.slug}`}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center justify-between px-6 py-3.5 text-sm border-b border-white/5 transition ${
+                      isActive ? 'text-gold' : 'text-offwhite hover:text-gold'
+                    }`
+                  }
+                >
+                  <span className="uppercase tracking-widest">{t.label}</span>
+                  {t.desc && (
+                    <span className="text-xs text-muted ml-4 normal-case tracking-normal">{t.desc}</span>
+                  )}
+                </NavLink>
+              ))}
+            </>
+          )}
+
+          {/* Host — bottom of drawer */}
           <NavLink
             to="/host"
             onClick={() => setOpen(false)}
             className={({ isActive }) =>
-              `block px-6 py-4 text-sm uppercase tracking-widest border-b border-white/5 ${
-                isActive ? 'text-gold' : 'text-muted hover:text-offwhite transition'
+              `block px-6 py-4 text-sm uppercase tracking-widest border-t border-white/10 mt-2 transition ${
+                isActive ? 'text-gold' : 'text-muted hover:text-offwhite'
               }`
             }
           >

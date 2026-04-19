@@ -27,9 +27,9 @@ async function req(path, { method = 'GET', body, auth = false } = {}) {
 
 export const api = {
   // ── Auth (per-device session) ─────────────────────────────────────────────
-  // Login: POST /api/auth with password → stores token in sessionStorage
-  login: async (password) => {
-    const data = await req('/api/auth', { method: 'POST', body: { password } });
+  // Login: POST /api/auth with username + password → stores token in sessionStorage
+  login: async (username, password) => {
+    const data = await req('/api/auth', { method: 'POST', body: { username, password } });
     setToken(data.token);
     return data;
   },

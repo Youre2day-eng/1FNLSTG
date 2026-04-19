@@ -37,6 +37,15 @@ export const DF = {
     {n:"Custom / Tell me your budget",p:"Let's talk",c:"Photography",d:"Tell me your vision.",i:["Free 20min consult"]}
   ],
   imgs: [],
+  // Tool pages — each one becomes a /tools/:slug route.
+  // inNav: true  → appears in hamburger menu under "Free Tools"
+  // src: path served from /public/tools/ or any URL
+  toolPages: [
+    { id: 'cypher',     slug: 'cypher',     label: 'Cypher',       src: '/tools/cypher.html',    inNav: true,  desc: 'Beat player & store' },
+    { id: 'aisle-lens', slug: 'aisle-lens', label: 'Aisle & Lens', src: '/tools/aisle-lens.html',inNav: true,  desc: 'Wedding photography community' },
+    { id: 'lexsearch',  slug: 'lexsearch',  label: 'LexSearch',    src: '/tools/lexsearch.html', inNav: true,  desc: 'Free US legal research' },
+    { id: 'gallery',    slug: 'gallery',    label: 'Gallery',       src: '/tools/gallery.html',   inNav: true,  desc: 'Premium gallery viewer' },
+  ],
   creds: [
     {icon:"📸",t:"Photography",d:"Studio · Events · Sports · Real Estate"},
     {icon:"🎬",t:"Film & Video",d:"Music Videos · Podcast · YouTube"},

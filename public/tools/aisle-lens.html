@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aisle &amp; Lens | The Wedding Photography Community</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   AISLE & LENS — Wedding Photography Community v2
+   ============================================================ */
+
+:root {
+  --bg:          #FAF9F6;
+  --bg2:         #F2F0EB;
+  --text:        #1E1E1E;
+  --muted:       #6A6560;
+  --muted2:      #9E9890;
+  --card:        #FFFFFF;
+  --accent:      #C9A84C;
+  --accent-h:    #A88B3A;
+  --border:      #E5E2DC;
+  --border2:     #D0CDC6;
+
+  /* Belt colours */
+  --belt-white:  #F0F0F0;
+  --belt-yellow: #F5C518;
+  --belt-green:  #3BAA6E;
+  --belt-blue:   #2B7FD4;
+  --belt-red:    #D94040;
+  --belt-black:  #111111;
+
+  --font-serif: 'Playfair Display', serif;
+  --font-sans:  'DM Sans', sans-serif;
+  --font-mono:  'DM Mono', monospace;
+
+  --radius:  10px;
+  --radius-s: 6px;
+  --ease:    cubic-bezier(.25,.46,.45,.94);
+  --shadow:  0 4px 24px rgba(0,0,0,.055);
+  --shadow-h:0 12px 36px rgba(0,0,0,.1);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+a { text-decoration: none; color: inherit; }
+button { font-family: var(--font-sans); cursor: pointer; border: none; background: none; }
+
+/* ── Navigation ── */
+nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.4rem 5%;
+  background: rgba(250,249,246,.92);
+  backdrop-filter: blur(16px) saturate(1.3);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+  transition: padding .3s var(--ease);
+}
+nav.scrolled { padding: .9rem 5%; }
+.logo {
+  font-family: var(--font-serif);
+  font-size: 1.75rem; font-weight: 700;
+  color: var(--text); letter-spacing: -.4px;
+}
+.logo span { color: var(--accent); font-style: italic; }
+.nav-links { display: flex; gap: 2rem; align-items: center; }
+.nav-link {
+  font-size: .82rem; font-weight: 500; color: var(--muted);
+  transition: color .2s; letter-spacing: .01em;
+}
+.nav-link:hover { color: var(--accent); }
+.nav-back {
+  color: var(--accent); font-style: italic; font-weight: 600;
+  border-right: 1px solid var(--border); padding-right: 1.5rem;
+}
+.btn-primary {
+  background: var(--text); color: #fff;
+  padding: .6rem 1.25rem; border-radius: var(--radius-s);
+  font-size: .82rem; font-weight: 500;
+  transition: background .2s, transform .15s;
+}
+.btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
+
+/* ── Hero ── */
+.hero {
+  text-align: center;
+  padding: 7rem 1.5rem 5rem;
+  max-width: 760px; margin: 0 auto;
+}
+.hero-eyebrow {
+  font-family: var(--font-mono); font-size: .65rem;
+  letter-spacing: .3em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 1.2rem; opacity: .85;
+}
+.hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1.08; margin-bottom: 1.25rem;
+  letter-spacing: -.5px;
+}
+.hero h1 em { color: var(--accent); font-style: italic; }
+.hero p {
+  font-size: 1rem; color: var(--muted);
+  margin-bottom: 3rem; line-height: 1.75;
+  max-width: 580px; margin-left: auto; margin-right: auto;
+}
+
+/* ── Filters ── */
+.filters {
+  display: flex; justify-content: center;
+  gap: .75rem; flex-wrap: wrap; padding: 0 1rem;
+}
+.filter-select {
+  padding: .7rem 2.5rem .7rem 1.1rem;
+  border: 1px solid var(--border2);
+  border-radius: 30px;
+  background: var(--card); font-family: var(--font-sans);
+  font-size: .82rem; color: var(--text);
+  outline: none; cursor: pointer;
+  transition: border-color .2s, box-shadow .2s;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' width%3D'12' height%3D'12'%3E%3Cpath fill%3D'%236A6560' d%3D'M6 8L1 3h10z'%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right .9rem center;
+  box-shadow: var(--shadow);
+}
+.filter-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201,168,76,.15); }
+
+/* ── Results bar ── */
+.results-bar {
+  max-width: 1200px; margin: 0 auto;
+  padding: 0 2rem 1.5rem;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono); font-size: .65rem;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted2);
+}
+
+/* ── Grid ── */
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem 2rem 6rem; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px,1fr));
+  gap: 2rem;
+}
+
+/* ── Photographer Card ── */
+.card {
+  background: var(--card); border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow);
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+  position: relative;
+}
+.card:hover { transform: translateY(-6px); box-shadow: var(--shadow-h); }
+
+.card-img-wrap { position: relative; height: 265px; overflow: hidden; cursor: pointer; }
+.card-img { width: 100%; height: 100%; object-fit: cover; transition: transform .55s var(--ease); }
+.card:hover .card-img { transform: scale(1.06); }
+
+/* Image gradient overlay */
+.card-img-wrap::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(20,18,15,.35) 0%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Belt Badge */
+.belt-badge {
+  position: absolute; top: 1rem; left: 1rem; z-index: 2;
+  padding: .35rem .9rem; border-radius: 30px;
+  font-family: var(--font-mono); font-size: .62rem;
+  font-weight: 500; text-transform: uppercase; letter-spacing: .1em;
+  display: flex; align-items: center; gap: .45rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0,0,0,.12);
+}
+.belt-badge::before {
+  content: ''; display: block; width: 9px; height: 9px;
+  border-radius: 50%; flex-shrink: 0;
+}
+.belt-white  { background: rgba(255,255,255,.9); color: #444; }
+.belt-white::before  { background: #ddd; border: 1px solid #bbb; }
+.belt-yellow { background: rgba(255,255,255,.9); color: #444; }
+.belt-yellow::before { background: var(--belt-yellow); }
+.belt-green  { background: rgba(255,255,255,.9); color: #444; }
+.belt-green::before  { background: var(--belt-green); }
+.belt-blue   { background: rgba(255,255,255,.9); color: #444; }
+.belt-blue::before   { background: var(--belt-blue); }
+.belt-red    { background: rgba(255,255,255,.9); color: #444; }
+.belt-red::before    { background: var(--belt-red); }
+.belt-black  { background: rgba(10,10,10,.88); color: #fff; }
+.belt-black::before  { background: #555; }
+
+.card-info { padding: 1.4rem 1.5rem 1.5rem; }
+.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .4rem; }
+.photog-name {
+  font-family: var(--font-serif); font-size: 1.3rem; font-weight: 600;
+  cursor: pointer; transition: color .18s; line-height: 1.2;
+}
+.photog-name:hover { color: var(--accent); }
+.photog-style {
+  font-family: var(--font-mono); font-size: .62rem;
+  color: var(--muted2); margin-bottom: 1rem; display: block;
+  text-transform: uppercase; letter-spacing: .1em;
+}
+
+.card-stats {
+  display: flex; align-items: center; gap: 1.25rem;
+  margin-bottom: 1.25rem; padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.stat { display: flex; align-items: center; gap: .4rem; font-size: .85rem; color: var(--muted); }
+.stat-icon { color: var(--belt-yellow); font-size: 1rem; }
+.like-btn {
+  transition: transform .2s var(--ease);
+  font-size: 1.05rem; line-height: 1;
+  color: var(--muted2);
+}
+.like-btn:hover { transform: scale(1.25); }
+.like-btn.liked { color: #e74c3c; }
+
+.card-footer { display: flex; justify-content: space-between; align-items: center; }
+.price-tag { font-size: .8rem; color: var(--muted); }
+.price-amount { font-weight: 700; color: var(--text); font-size: 1.05rem; }
+.view-btn {
+  font-family: var(--font-mono); font-size: .68rem; font-weight: 500;
+  color: var(--accent); text-transform: uppercase; letter-spacing: .12em;
+  transition: color .2s, letter-spacing .2s;
+}
+.view-btn:hover { color: var(--accent-h); letter-spacing: .18em; }
+
+/* ── Belt Legend ── */
+.belt-legend {
+  max-width: 1200px; margin: 0 auto;
+  padding: 2.5rem 2rem;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 1rem; flex-wrap: wrap;
+}
+.legend-item {
+  display: flex; align-items: center; gap: .5rem;
+  font-family: var(--font-mono); font-size: .6rem;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--muted2);
+}
+.legend-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,8,6,.6);
+  backdrop-filter: blur(6px) saturate(1.2);
+  display: none; justify-content: center; align-items: center;
+  z-index: 1000; padding: 1rem;
+}
+.modal-overlay.active { display: flex; }
+.modal-content {
+  background: var(--card);
+  width: 100%; max-width: 820px;
+  border-radius: 16px; overflow: hidden;
+  display: flex; flex-direction: column;
+  max-height: 92vh;
+  box-shadow: 0 40px 80px rgba(0,0,0,.2);
+  animation: mIn .32s var(--ease);
+}
+@keyframes mIn { from { opacity:0; transform:translateY(24px) scale(.98); } to { opacity:1; transform:none; } }
+
+.modal-header { position: relative; height: 310px; flex-shrink: 0; }
+.modal-header img { width: 100%; height: 100%; object-fit: cover; }
+.modal-header::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.45) 0%, transparent 60%);
+}
+.modal-close {
+  position: absolute; top: 1rem; right: 1rem; z-index: 2;
+  background: rgba(255,255,255,.88);
+  width: 36px; height: 36px; border-radius: 50%;
+  font-size: 1.3rem; line-height: 1;
+  display: flex; justify-content: center; align-items: center;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0,0,0,.12);
+  transition: background .2s, color .2s;
+}
+.modal-close:hover { background: #fff; color: var(--accent); }
+
+.modal-body { padding: 2rem 2.25rem 2.25rem; overflow-y: auto; }
+.modal-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+.modal-title { font-family: var(--font-serif); font-size: 2.2rem; margin-bottom: .3rem; line-height: 1.1; }
+.modal-desc { color: var(--muted); line-height: 1.75; margin-bottom: 2rem; font-size: .93rem; }
+.modal-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+.btn-sec {
+  padding: .65rem 1.4rem;
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-s);
+  font-size: .82rem; font-weight: 500;
+  transition: border-color .2s, background .2s;
+}
+.btn-sec:hover { border-color: var(--accent); background: #fff; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: -70px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--text); color: #fff;
+  padding: .9rem 1.8rem; border-radius: 30px;
+  font-family: var(--font-mono); font-size: .75rem;
+  letter-spacing: .08em;
+  transition: bottom .4s var(--ease);
+  z-index: 9999; box-shadow: 0 12px 32px rgba(0,0,0,.18);
+  white-space: nowrap;
+}
+.toast.show { bottom: 28px; }
+
+/* ── Empty State ── */
+.empty-state {
+  grid-column: 1/-1; text-align: center;
+  padding: 6rem 2rem; color: var(--muted2);
+}
+.empty-state p { font-family: var(--font-mono); font-size: .7rem; letter-spacing: .15em; text-transform: uppercase; }
+
+/* ── Footer ── */
+.site-footer {
+  background: var(--text); color: rgba(255,255,255,.45);
+  padding: 2.5rem 5%;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 1rem;
+  font-family: var(--font-mono); font-size: .62rem;
+  letter-spacing: .12em; text-transform: uppercase;
+}
+.site-footer .logo { color: #fff; font-size: 1.25rem; }
+.site-footer .logo span { color: var(--accent); }
+.site-footer a { color: rgba(255,255,255,.45); transition: color .2s; }
+.site-footer a:hover { color: var(--accent); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.4rem; }
+  .modal-top { flex-direction: column; align-items: flex-start; }
+  .nav-links { display: none; }
+  .grid { grid-template-columns: 1fr; }
+  .results-bar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav id="top-nav">
+  <div class="logo">Aisle <span>&amp;</span> Lens</div>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link nav-back">← Back to Final Stage</a>
+    <a href="#" class="nav-link">Community Gallery</a>
+    <a href="#" class="nav-link">How Rankings Work</a>
+    <button class="btn-primary" onclick="showToast('Redirecting to Pro Signup…')">Join as Photographer</button>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-eyebrow">Community · Transparent · Affordable</div>
+  <h1>Your perfect day,<br>captured at your<br><em>perfect price.</em></h1>
+  <p>Discover wedding photographers through our transparent Belt Ranking system — built on experience, reviews, and community likes. Find rising stars and incredible talent outside the expensive wedding networks.</p>
+  <div class="filters">
+    <select class="filter-select" id="filter-belt" onchange="renderGrid()">
+      <option value="all">All Belt Ranks</option>
+      <option value="white">White Belt (under $500)</option>
+      <option value="yellow">Yellow Belt ($500 – $1k)</option>
+      <option value="green">Green Belt ($1k – $1.5k)</option>
+      <option value="blue">Blue Belt ($1.5k – $2.5k)</option>
+      <option value="red">Red Belt ($2.5k – $4k)</option>
+      <option value="black">Black Belt ($4k+)</option>
+    </select>
+    <select class="filter-select" id="filter-style" onchange="renderGrid()">
+      <option value="all">All Styles</option>
+      <option value="Photojournalism">Photojournalism</option>
+      <option value="Fine Art">Fine Art</option>
+      <option value="Dark &amp; Moody">Dark &amp; Moody</option>
+      <option value="Traditional">Traditional</option>
+    </select>
+  </div>
+</section>
+
+<!-- Results Bar -->
+<div class="results-bar">
+  <span id="results-count">— photographers</span>
+  <span>Sorted by community rank</span>
+</div>
+
+<!-- Main Grid -->
+<div class="container">
+  <div class="grid" id="photog-grid"></div>
+</div>
+
+<!-- Belt Legend -->
+<div class="belt-legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#ddd;border:1px solid #bbb;"></div>White · Under $500</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--belt-yellow);"></div>Yellow · $500–$1k</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--belt-green);"></div>Green · $1k–$1.5k</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--belt-blue);"></div>Blue · $1.5k–$2.5k</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--belt-red);"></div>Red · $2.5k–$4k</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--belt-black);"></div>Black · $4k+</div>
+</div>
+
+<!-- Modal Profile View -->
+<div class="modal-overlay" id="profile-modal" onclick="closeModal(event)">
+  <div class="modal-content">
+    <div class="modal-header">
+      <img id="mod-img" src="" alt="Cover">
+      <button class="modal-close" onclick="document.getElementById('profile-modal').classList.remove('active')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-top">
+        <div>
+          <div id="mod-belt" class="belt-badge" style="position:relative;top:0;left:0;display:inline-flex;margin-bottom:.9rem;"></div>
+          <h2 class="modal-title" id="mod-name">Name</h2>
+          <span class="photog-style" id="mod-style">Style</span>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:var(--font-mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:.25rem;">Starting at</div>
+          <div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;" id="mod-price">$0</div>
+        </div>
+      </div>
+      <p class="modal-desc" id="mod-desc">Description goes here.</p>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="showToast('Inquiry sent! The photographer will reply soon.')">Contact Photographer</button>
+        <button class="btn-sec" onclick="showToast('Opening full gallery…')">View Full Gallery</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Site Footer -->
+<footer class="site-footer">
+  <div class="logo">Aisle <span>&amp;</span> Lens</div>
+  <div>A <a href="index.html">Final Stage Productions</a> community</div>
+  <div>© 2025 · Community-driven · Not sponsored</div>
+</footer>
+
+<script>
+/* ============================================================
+   AISLE & LENS — Logic v2
+   ============================================================ */
+
+const DEFAULT_PHOTOGS = [
+  {
+    id: 1, name: "Emma Davis Photo", belt: "white", beltLabel: "White Belt",
+    price: 350, likes: 12, reviews: 2, rating: 4.5, style: "Photojournalism",
+    img: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80",
+    desc: "Hi! I'm Emma. I'm new to the wedding scene but have 3 years of portrait experience. I'm building my wedding portfolio, which means you get incredibly dedicated coverage for a fraction of the cost. I focus on candid, genuine moments."
+  },
+  {
+    id: 2, name: "Lumina Visions", belt: "yellow", beltLabel: "Yellow Belt",
+    price: 850, likes: 145, reviews: 14, rating: 4.8, style: "Fine Art",
+    img: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80",
+    desc: "Lumina Visions captures weddings with an elegant, fine-art approach. After shooting 15 beautiful weddings, I've leveled up to Yellow Belt. I specialize in bright, romantic edits and making couples feel incredibly comfortable."
+  },
+  {
+    id: 3, name: "The Moody Lens", belt: "green", beltLabel: "Green Belt",
+    price: 1200, likes: 312, reviews: 28, rating: 4.9, style: "Dark & Moody",
+    img: "https://images.unsplash.com/photo-1606800052052-a08af7148866?auto=format&fit=crop&w=800&q=80",
+    desc: "For the untraditional couple. We love shadows, emotion, and dramatic landscapes. Green Belt status achieved after 30+ successful weddings and glowing community reviews."
+  },
+  {
+    id: 4, name: "Classic Vows Studio", belt: "blue", beltLabel: "Blue Belt",
+    price: 1800, likes: 589, reviews: 65, rating: 5.0, style: "Traditional",
+    img: "https://images.unsplash.com/photo-1583939000009-80b456fea0bc?auto=format&fit=crop&w=800&q=80",
+    desc: "Timeless, sharp, and perfectly posed. We make sure grandma gets the formal family shots, while still capturing the magic of the dance floor. A trusted Blue Belt studio with years of experience."
+  },
+  {
+    id: 5, name: "Wanderlust Imagery", belt: "white", beltLabel: "White Belt",
+    price: 400, likes: 8, reviews: 1, rating: 5.0, style: "Dark & Moody",
+    img: "https://images.unsplash.com/photo-1544078755-9ebfbbf261a9?auto=format&fit=crop&w=800&q=80",
+    desc: "An elopement specialist breaking into the wedding market. I love mountain tops, rainy days, and intimate vows. Booking at White Belt rates for this season only!"
+  },
+  {
+    id: 6, name: "Masterpiece Captures", belt: "black", beltLabel: "Black Belt",
+    price: 4500, likes: 2104, reviews: 142, rating: 5.0, style: "Fine Art",
+    img: "https://images.unsplash.com/photo-1606490206121-1375d691e846?auto=format&fit=crop&w=800&q=80",
+    desc: "The pinnacle of wedding photography. As a Black Belt studio, we deliver magazine-worthy editorials, luxury experience, and a stress-free day. We've seen it all and capture it perfectly."
+  }
+];
+
+// ── State ─────────────────────────────────────────────────────
+let photographers = JSON.parse(localStorage.getItem('al_data')) || DEFAULT_PHOTOGS;
+let likedIds      = JSON.parse(localStorage.getItem('al_likes')) || [];
+
+function saveState() {
+  localStorage.setItem('al_data',  JSON.stringify(photographers));
+  localStorage.setItem('al_likes', JSON.stringify(likedIds));
+}
+
+// ── Helpers ───────────────────────────────────────────────────
+const formatPrice = n =>
+  new Intl.NumberFormat('en-US', { style:'currency', currency:'USD', maximumFractionDigits:0 }).format(n);
+
+// ── Render ────────────────────────────────────────────────────
+function renderGrid() {
+  const beltFilter  = document.getElementById('filter-belt').value;
+  const styleFilter = document.getElementById('filter-style').value;
+  const grid        = document.getElementById('photog-grid');
+  const counter     = document.getElementById('results-count');
+
+  grid.innerHTML = '';
+
+  const filtered = photographers.filter(p => {
+    const matchBelt  = beltFilter  === 'all' || p.belt  === beltFilter;
+    const matchStyle = styleFilter === 'all' || p.style === styleFilter;
+    return matchBelt && matchStyle;
+  }).sort((a, b) => b.likes - a.likes);
+
+  counter.textContent = filtered.length + ' photographer' + (filtered.length !== 1 ? 's' : '');
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty-state"><p>No photographers match these filters.<br>Try adjusting your search.</p></div>';
+    return;
+  }
+
+  filtered.forEach((p, idx) => {
+    const isLiked = likedIds.includes(p.id);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.animationDelay = (idx * 40) + 'ms';
+    card.innerHTML = `
+      <div class="card-img-wrap" onclick="openProfile(${p.id})">
+        <div class="belt-badge belt-${p.belt}">${p.beltLabel}</div>
+        <img src="${p.img}" alt="${p.name}" class="card-img" loading="lazy">
+      </div>
+      <div class="card-info">
+        <div class="card-header">
+          <div>
+            <h3 class="photog-name" onclick="openProfile(${p.id})">${p.name}</h3>
+            <span class="photog-style">${p.style}</span>
+          </div>
+        </div>
+        <div class="card-stats">
+          <div class="stat">
+            <button class="like-btn${isLiked ? ' liked' : ''}" onclick="toggleLike(event, ${p.id})">${isLiked ? '♥' : '♡'}</button>
+            <span class="like-count">${p.likes.toLocaleString()}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">★</span>
+            <span>${p.rating} (${p.reviews} reviews)</span>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="price-tag">from <span class="price-amount">${formatPrice(p.price)}</span></div>
+          <button class="view-btn" onclick="openProfile(${p.id})">View Profile →</button>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── Like Toggle ───────────────────────────────────────────────
+function toggleLike(e, id) {
+  e.stopPropagation();
+  const btn     = e.currentTarget;
+  const count   = btn.nextElementSibling;
+  const pIdx    = photographers.findIndex(x => x.id === id);
+  if (pIdx === -1) return;
+
+  if (likedIds.includes(id)) {
+    likedIds = likedIds.filter(x => x !== id);
+    photographers[pIdx].likes = Math.max(0, photographers[pIdx].likes - 1);
+    btn.classList.remove('liked'); btn.textContent = '♡';
+  } else {
+    likedIds.push(id);
+    photographers[pIdx].likes++;
+    btn.classList.add('liked'); btn.textContent = '♥';
+    showToast('Added to your favorites!');
+  }
+  count.textContent = photographers[pIdx].likes.toLocaleString();
+  saveState();
+}
+
+// ── Modal ─────────────────────────────────────────────────────
+function openProfile(id) {
+  const p = photographers.find(x => x.id === id);
+  if (!p) return;
+
+  document.getElementById('mod-img').src = p.img;
+
+  const beltEl = document.getElementById('mod-belt');
+  beltEl.className = 'belt-badge belt-' + p.belt;
+  beltEl.textContent = p.beltLabel;
+
+  document.getElementById('mod-name').textContent  = p.name;
+  document.getElementById('mod-style').textContent = p.style;
+  document.getElementById('mod-price').textContent = formatPrice(p.price);
+  document.getElementById('mod-desc').textContent  = p.desc;
+
+  document.getElementById('profile-modal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e.target.classList.contains('modal-overlay')) {
+    e.target.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+}
+document.getElementById('profile-modal').querySelector('.modal-close').addEventListener('click', () => {
+  document.getElementById('profile-modal').classList.remove('active');
+  document.body.style.overflow = '';
+});
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── Scroll nav shrink ─────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('top-nav').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// ── Init ──────────────────────────────────────────────────────
+renderGrid();
+</script>
+</body>
+</html>
