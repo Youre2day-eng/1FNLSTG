@@ -32,10 +32,19 @@ export default function Booking() {
     setCal(c => c.m === 11 ? { m: 0, y: c.y + 1 } : { m: c.m + 1, y: c.y });
   }
 
-  function doBook() {
+  async function doBook() {
     if (!selDate || selSvc === null || !selTime) return;
     const svc = d.svcs[selSvc];
     const ds = selDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    try {
+      await api.submitBooking({
+        service: svc.n,
+        price: svc.p,
+        date: ds,
+        time: selTime,
+        payment: d.pay,
+      });
+    } catch {}
     const sub = encodeURIComponent('Booking: ' + svc.n + ' — ' + ds);
     const body = encodeURIComponent('Service: ' + svc.n + '\nPrice: ' + svc.p + '\nDate: ' + ds + '\nTime: ' + selTime + '\n\nPayment: ' + d.pay);
     if (d.email) window.location.href = 'mailto:' + d.email + '?subject=' + sub + '&body=' + body;
@@ -71,6 +80,16 @@ export default function Booking() {
         <p className="text-xs uppercase tracking-widest text-muted mb-4">{d.bsb}</p>
         <h1 className="font-display text-[clamp(3rem,10vw,8rem)] leading-none mb-2">Book a Session</h1>
         <p className="text-xs text-muted mb-12">{d.dep}</p>
+        {(d.cryptoBuckets || []).filter((b) => b.address).length > 0 && (
+          <div className="mb-8 border border-white/10 p-4">
+            <div className="text-xs uppercase tracking-widest text-gold mb-2">Crypto Payment Buckets</div>
+            {(d.cryptoBuckets || []).filter((b) => b.address).map((b) => (
+              <div key={b.id || b.name} className="text-xs text-muted">
+                <span className="text-offwhite">{b.name}</span> ({b.network}) · {b.address}
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 

@@ -1,10 +1,11 @@
 // GET  /api/bookings  — protected (Bearer token), reads booking list from KV
 // POST /api/bookings  — public, submits a new booking (appended to list in KV)
-// PATCH /api/bookings — protected (Bearer token), updates booking status
+// PATCH /api/bookings — protected (Bearer token), updates booking status with optional notes
 //
 // KV binding: CONFIG → fnlstg-config namespace (set in Cloudflare Pages → Settings → Bindings)
 
 const BOOKINGS_KEY = 'fsp_bookings';
+const STATE_KEY = 'fsp_state';
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -27,15 +28,18 @@ export async function onRequestOptions() {
   });
 }
 
-function isAuthorized(request, env) {
+async function isAuthorized(request, env) {
   const auth = request.headers.get('authorization') || '';
   const token = auth.replace('Bearer ', '').trim();
-  return token && token === env.ADMIN_TOKEN;
+  if (!token) return false;
+  const raw = await env.ADMIN_TOKEN.get(STATE_KEY);
+  const state = raw ? JSON.parse(raw) : {};
+  return token === state.pw;
 }
 
 // GET — returns all bookings; requires Bearer token
 export async function onRequestGet({ request, env }) {
-  if (!isAuthorized(request, env)) {
+  if (!(await isAuthorized(request, env))) {
     return json({ ok: false, error: 'Unauthorized.' }, 401);
   }
   try {
@@ -58,11 +62,13 @@ export async function onRequestPost({ request, env }) {
     const raw = await env.ADMIN_TOKEN.get(BOOKINGS_KEY);
     const bookings = raw ? JSON.parse(raw) : [];
 
+    const now = new Date().toISOString();
     const booking = {
       ...payload,
       id: crypto.randomUUID(),
-      timestamp: new Date().toISOString(),
+      timestamp: now,
       status: 'pending',
+      history: [{ at: now, by: 'system', action: 'created', note: 'Booking received' }],
     };
 
     bookings.push(booking);
@@ -74,13 +80,13 @@ export async function onRequestPost({ request, env }) {
   }
 }
 
-// PATCH — requires Bearer token; body: { id, status } where status is "approved" or "denied"
+// PATCH — requires Bearer token; body: { id, status, note? } where status is "approved" or "denied"
 export async function onRequestPatch({ request, env }) {
-  if (!isAuthorized(request, env)) {
+  if (!(await isAuthorized(request, env))) {
     return json({ ok: false, error: 'Unauthorized.' }, 401);
   }
   try {
-    const { id, status } = await request.json();
+    const { id, status, note = '' } = await request.json();
     if (!id || !status) {
       return json({ ok: false, error: 'id and status are required.' }, 400);
     }
@@ -96,7 +102,9 @@ export async function onRequestPatch({ request, env }) {
       return json({ ok: false, error: 'Booking not found.' }, 404);
     }
 
-    bookings[idx] = { ...bookings[idx], status };
+    const now = new Date().toISOString();
+    const history = [...(bookings[idx].history || []), { at: now, by: 'admin', action: status, note }];
+    bookings[idx] = { ...bookings[idx], status, note, history };
     await env.ADMIN_TOKEN.put(BOOKINGS_KEY, JSON.stringify(bookings));
 
     return json({ ok: true, booking: bookings[idx] });

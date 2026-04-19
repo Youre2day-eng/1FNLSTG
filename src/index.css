@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --fsp-bg: #060608;
+  --fsp-text: #f0eade;
+  --fsp-muted: #52504a;
+  --fsp-gold: #c9a84c;
+  --fsp-card: #101014;
+  --fsp-body-font: "Space Grotesk";
+  --fsp-display-font: "Bebas Neue";
+  --fsp-body-size: 16px;
+  --fsp-heading-scale: 1;
+}
+
 html { scroll-behavior: smooth; }
-body { overflow-x: hidden; line-height: 1.6; }
+body { overflow-x: hidden; line-height: 1.6; background: var(--fsp-bg); color: var(--fsp-text); font-size: var(--fsp-body-size); }
 a { text-decoration: none; color: inherit; }
+
+.font-display { font-family: var(--fsp-display-font), sans-serif !important; }
+.bg-black { background-color: var(--fsp-bg) !important; }
+.bg-card { background-color: var(--fsp-card) !important; }
+.text-offwhite { color: var(--fsp-text) !important; }
+.text-muted { color: var(--fsp-muted) !important; }
+.text-gold { color: var(--fsp-gold) !important; }
+.border-gold { border-color: var(--fsp-gold) !important; }
+.bg-gold { background-color: var(--fsp-gold) !important; }

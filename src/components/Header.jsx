@@ -14,6 +14,8 @@ const CORE_LINKS = [
 export default function Header() {
   const [open, setOpen] = useState(false);
   const { state } = useSite();
+  const links = (state.navLinks && state.navLinks.length ? state.navLinks : CORE_LINKS)
+    .filter((l) => l.visible !== false);
 
   // Always use DF.toolPages as base — KV state may not have toolPages yet
   const tools = (state.toolPages && state.toolPages.length ? state.toolPages : DF.toolPages).filter(t => t.inNav);
@@ -28,7 +30,7 @@ export default function Header() {
         </Link>
 
         <nav className="hidden md:flex gap-8 text-xs uppercase tracking-widest">
-          {CORE_LINKS.map(l => (
+          {links.map(l => (
             <NavLink key={l.to} to={l.to}
               className={({ isActive }) => isActive ? 'text-gold' : 'text-offwhite hover:text-gold transition'}>
               {l.label}
@@ -58,7 +60,7 @@ export default function Header() {
         <nav className="border-t border-white/5 bg-black/95 max-h-[80vh] overflow-y-auto">
 
           {/* Core links */}
-          {CORE_LINKS.map(l => (
+          {links.map(l => (
             <NavLink key={l.to} to={l.to} onClick={() => setOpen(false)}
               className={({ isActive }) =>
                 `block px-6 py-4 text-sm uppercase tracking-widest border-b border-white/5 transition ${
@@ -81,12 +83,11 @@ export default function Header() {
             </NavLink>
           ))}
 
-          {/* Host */}
-          <NavLink to="/host" onClick={() => setOpen(false)}
+          <NavLink to="/admin" onClick={() => setOpen(false)}
             className={({ isActive }) =>
               `block px-6 py-4 text-sm uppercase tracking-widest border-t border-white/10 mt-2 transition ${
                 isActive ? 'text-gold' : 'text-muted hover:text-offwhite'}`}>
-            Host ⬡
+            Admin
           </NavLink>
         </nav>
       )}

@@ -15,7 +15,7 @@ export const DF = {
   ap2: "From birthdays to music video masterpieces. From listings that sell to athlete profiles that get coaches' attention.",
   aq: "\u201cI don\u2019t just take pictures. I build the visual identity of people serious about their story.\u201d",
   s1n: "23+", s1l: "Service Types", s2n: "PNW", s2l: "Based & Rooted", s3n: "\u221e", s3l: "Creative Range",
-  heroimg: "", aboutimg: "", vt: "none", vid: "", pw: "fsp2025",
+  heroimg: "", aboutimg: "", vt: "none", vid: "", pw: "fsp2025", adminUser: "host",
   cd: [0],
   ts: ["9:00 AM","10:30 AM","12:00 PM","1:30 PM","3:00 PM","4:30 PM","Sunset"],
   cats: ["Photography","Film & Video","Artist","Sports & NIL","Real Estate","Coaching"],
@@ -37,6 +37,42 @@ export const DF = {
     {n:"Custom / Tell me your budget",p:"Let's talk",c:"Photography",d:"Tell me your vision.",i:["Free 20min consult"]}
   ],
   imgs: [],
+  navLinks: [
+    { id: 'home', to: '/', label: 'Home', visible: true },
+    { id: 'gallery', to: '/gallery', label: 'Gallery', visible: true },
+    { id: 'services', to: '/services', label: 'Services', visible: true },
+    { id: 'booking', to: '/booking', label: 'Book', visible: true },
+    { id: 'host', to: '/host', label: 'Host', visible: true },
+  ],
+  paymentLinks: [
+    { id: 'venmo', label: 'Venmo', url: '', visible: true },
+    { id: 'paypal', label: 'PayPal', url: '', visible: true },
+    { id: 'stripe', label: 'Stripe', url: '', visible: true },
+  ],
+  paymentProcessors: { stripe: false, paypal: false, square: false },
+  cryptoBuckets: [
+    { id: 'btc', name: 'BTC Wallet', network: 'Bitcoin', address: '' },
+    { id: 'eth', name: 'ETH Wallet', network: 'Ethereum', address: '' },
+  ],
+  theme: {
+    bg: '#060608',
+    text: '#f0eade',
+    muted: '#52504a',
+    gold: '#c9a84c',
+    card: '#101014',
+    bodyFont: 'Space Grotesk',
+    displayFont: 'Bebas Neue',
+    bodySize: 16,
+    headingScale: 1,
+  },
+  config: {
+    siteName: 'Final Stage Productions',
+    supportEmail: 'you@youremail.com',
+    awsBucket: '',
+    awsRegion: '',
+    awsBaseUrl: '',
+    apiKeys: { stripe: '', paypal: '', analytics: '' },
+  },
   // Tool pages — each one becomes a /tools/:slug route.
   // inNav: true  → appears in hamburger menu under "Free Tools"
   // src: path served from /public/tools/ or any URL
