@@ -16,7 +16,8 @@ const getLocalAuth = () => sessionStorage.getItem(LOCAL_AUTH_KEY) === '1';
 function getLocalState() {
   try {
     return JSON.parse(localStorage.getItem(STATE_CACHE_KEY) || '{}');
-  } catch {
+  } catch (e) {
+    console.warn('Failed to parse local state cache:', e);
     return {};
   }
 }
@@ -28,7 +29,8 @@ function setLocalState(state) {
 function getLocalBookings() {
   try {
     return JSON.parse(localStorage.getItem(BOOKINGS_CACHE_KEY) || '[]');
-  } catch {
+  } catch (e) {
+    console.warn('Failed to parse local bookings cache:', e);
     return [];
   }
 }
@@ -64,6 +66,7 @@ export const api = {
       setLocalAuth(false);
       return data;
     } catch (e) {
+      console.warn('Remote login failed, trying local fallback:', e);
       const state = getLocalState();
       const validUser = username === (state.adminUser || 'host');
       const validPass = password === state.pw;
@@ -86,7 +89,8 @@ export const api = {
       const state = j.state || {};
       setLocalState(state);
       return state;
-    } catch {
+    } catch (e) {
+      console.warn('Failed to load remote state, using local fallback:', e);
       return getLocalState();
     }
   },
@@ -94,7 +98,8 @@ export const api = {
     setLocalState(state);
     try {
       return await req('/api/state', { method: 'POST', body: state, auth: true });
-    } catch {
+    } catch (e) {
+      console.warn('Failed to save remote state, preserving local cache:', e);
       return { ok: true, local: true };
     }
   },
@@ -107,7 +112,8 @@ export const api = {
       const bookings = j.bookings || [];
       setLocalBookings(bookings);
       return bookings;
-    } catch {
+    } catch (e) {
+      console.warn('Failed to load remote bookings, using local fallback:', e);
       return getLocalBookings();
     }
   },
@@ -118,7 +124,8 @@ export const api = {
       const booking = j.booking;
       if (booking) setLocalBookings([...getLocalBookings(), booking]);
       return j;
-    } catch {
+    } catch (e) {
+      console.warn('Failed to submit remote booking, creating local booking:', e);
       const bookings = getLocalBookings();
       const booking = {
         ...payload,
@@ -138,7 +145,8 @@ export const api = {
       const bookings = getLocalBookings().map((b) => (b.id === id ? j.booking : b));
       setLocalBookings(bookings);
       return j;
-    } catch {
+    } catch (e) {
+      console.warn('Failed to update remote booking, applying local update:', e);
       const now = new Date().toISOString();
       const bookings = getLocalBookings().map((b) => {
         if (b.id !== id) return b;

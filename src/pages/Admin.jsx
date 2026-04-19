@@ -23,7 +23,7 @@ const TEXT_FIELDS = [
 const FONT_OPTIONS = ['Space Grotesk', 'Inter', 'Poppins', 'Bebas Neue', 'DM Sans', 'Montserrat'];
 
 function uid(prefix) {
-  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
+  return `${prefix}-${crypto.randomUUID()}`;
 }
 
 function Modal({ title, onClose, children }) {
@@ -56,7 +56,8 @@ function downloadFile(name, content, type = 'text/csv;charset=utf-8;') {
 }
 
 function parsePrice(value) {
-  const num = parseFloat(String(value || '').replace(/[^\d.]/g, ''));
+  const matched = String(value || '').match(/\d+(?:\.\d+)?/);
+  const num = matched ? parseFloat(matched[0]) : 0;
   return Number.isFinite(num) ? num : 0;
 }
 
@@ -80,7 +81,10 @@ export default function Admin() {
 
   useEffect(() => {
     if (!auth) return;
-    api.getBookings().then(setBookings).catch(() => setBookings([]));
+    api.getBookings().then(setBookings).catch(() => {
+      setBookings([]);
+      setError('Could not load bookings. Check admin auth or network status.');
+    });
   }, [auth]);
 
   const metrics = useMemo(() => {
@@ -111,9 +115,10 @@ export default function Admin() {
       await api.login(creds.username.trim(), creds.password);
       setAuth(true);
       setMessage('Signed in.');
-      setCreds({ username: '', password: '' });
     } catch {
       setError('Invalid admin credentials.');
+    } finally {
+      setCreds((c) => ({ ...c, password: '' }));
     }
   }
 
@@ -192,6 +197,7 @@ export default function Admin() {
           <form onSubmit={doLogin} className="space-y-4">
             <input required value={creds.username} onChange={(e) => setCreds((c) => ({ ...c, username: e.target.value }))} placeholder="Username" className="w-full bg-black border border-white/10 px-3 py-2 text-sm" />
             <input required type="password" value={creds.password} onChange={(e) => setCreds((c) => ({ ...c, password: e.target.value }))} placeholder="Password" className="w-full bg-black border border-white/10 px-3 py-2 text-sm" />
+            <p className="text-[11px] text-yellow-300 uppercase tracking-wide">Warning: local fallback auth is development-only. Use backend auth in production.</p>
             {error && <p className="text-xs text-red-300">{error}</p>}
             <button className="w-full py-3 bg-gold text-black text-xs uppercase tracking-widest font-medium">Sign In</button>
           </form>
@@ -467,7 +473,7 @@ export default function Admin() {
                 <input required value={working.adminUser || ''} onChange={(e) => updateField('adminUser', e.target.value)} className="bg-black border border-white/10 p-2" />
               </label>
               <label className="flex flex-col gap-1">Admin Password
-                <input required value={working.pw || ''} onChange={(e) => updateField('pw', e.target.value)} className="bg-black border border-white/10 p-2" />
+                <input type="password" required value={working.pw || ''} onChange={(e) => updateField('pw', e.target.value)} className="bg-black border border-white/10 p-2" />
               </label>
             </div>
 
@@ -543,11 +549,15 @@ export default function Admin() {
             <div className="flex justify-end gap-2">
               <button onClick={() => setModal(null)} className="px-3 py-2 border border-white/20">Cancel</button>
               <button onClick={() => {
-                if (!modal.item.label.trim() || !modal.item.to.trim()) return;
+                if (!modal.item.label.trim() || !modal.item.to.trim()) {
+                  setError('Navigation links require both label and path.');
+                  return;
+                }
                 const next = [...(working.navLinks || [])];
                 if (modal.isNew) next.push(modal.item);
                 else next[modal.index] = modal.item;
                 setWorking((w) => ({ ...w, navLinks: next }));
+                setError('');
                 setModal(null);
               }} className="px-3 py-2 bg-gold text-black uppercase tracking-widest">Save</button>
             </div>
@@ -564,11 +574,15 @@ export default function Admin() {
             <div className="flex justify-end gap-2">
               <button onClick={() => setModal(null)} className="px-3 py-2 border border-white/20">Cancel</button>
               <button onClick={() => {
-                if (!modal.item.label.trim() || !modal.item.url.trim()) return;
+                if (!modal.item.label.trim() || !modal.item.url.trim()) {
+                  setError('Payment links require both label and URL.');
+                  return;
+                }
                 const next = [...(working.paymentLinks || [])];
                 if (modal.isNew) next.push(modal.item);
                 else next[modal.index] = modal.item;
                 setWorking((w) => ({ ...w, paymentLinks: next }));
+                setError('');
                 setModal(null);
               }} className="px-3 py-2 bg-gold text-black uppercase tracking-widest">Save</button>
             </div>
@@ -585,11 +599,15 @@ export default function Admin() {
             <div className="flex justify-end gap-2">
               <button onClick={() => setModal(null)} className="px-3 py-2 border border-white/20">Cancel</button>
               <button onClick={() => {
-                if (!modal.item.name.trim() || !modal.item.address.trim()) return;
+                if (!modal.item.name.trim() || !modal.item.address.trim()) {
+                  setError('Crypto buckets require name and wallet address.');
+                  return;
+                }
                 const next = [...(working.cryptoBuckets || [])];
                 if (modal.isNew) next.push(modal.item);
                 else next[modal.index] = modal.item;
                 setWorking((w) => ({ ...w, cryptoBuckets: next }));
+                setError('');
                 setModal(null);
               }} className="px-3 py-2 bg-gold text-black uppercase tracking-widest">Save</button>
             </div>
@@ -600,9 +618,9 @@ export default function Admin() {
       {modal?.type === 'price' && (
         <Modal title="Edit Service Price" onClose={() => setModal(null)}>
           <div className="space-y-3 text-xs">
-            <input value={modal.item.n} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, n: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
-            <input value={modal.item.p} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, p: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
-            <textarea rows={3} value={modal.item.d || ''} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, d: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
+            <input aria-label="Service Name" placeholder="Service Name" value={modal.item.n} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, n: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
+            <input aria-label="Service Price" placeholder="Price" value={modal.item.p} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, p: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
+            <textarea aria-label="Service Description" placeholder="Description" rows={3} value={modal.item.d || ''} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, d: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
             <div className="flex justify-end gap-2">
               <button onClick={() => setModal(null)} className="px-3 py-2 border border-white/20">Cancel</button>
               <button onClick={() => {

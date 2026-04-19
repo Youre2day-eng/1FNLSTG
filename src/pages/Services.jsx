@@ -16,6 +16,7 @@ export default function Services() {
 
   const cats = ['All', ...d.cats];
   const svcs = activeCat === 'All' ? d.svcs : d.svcs.filter(s => s.c === activeCat);
+  const visiblePaymentLinks = (d.paymentLinks || []).filter((x) => x.visible !== false && x.url);
 
   return (
     <section className="pt-32 pb-20 px-6 min-h-screen">
@@ -74,9 +75,9 @@ export default function Services() {
         {/* Payment note */}
         <div className="border-t border-white/5 pt-8 text-xs text-muted leading-relaxed">
           <strong className="text-offwhite">Payment:</strong> {d.pay}
-          {(d.paymentLinks || []).filter((x) => x.visible !== false && x.url).length > 0 && (
+          {visiblePaymentLinks.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
-              {(d.paymentLinks || []).filter((x) => x.visible !== false && x.url).map((x) => (
+              {visiblePaymentLinks.map((x) => (
                 <a key={x.id || x.label} href={x.url} target="_blank" rel="noreferrer"
                   className="px-3 py-1 border border-white/10 hover:border-gold hover:text-gold transition">
                   {x.label}

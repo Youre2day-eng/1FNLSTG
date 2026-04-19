@@ -6,6 +6,7 @@
 
 const BOOKINGS_KEY = 'fsp_bookings';
 const STATE_KEY = 'fsp_state';
+// Note: "ADMIN_TOKEN" is a legacy KV binding name used as a general config store.
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -34,7 +35,13 @@ async function isAuthorized(request, env) {
   if (!token) return false;
   const raw = await env.ADMIN_TOKEN.get(STATE_KEY);
   const state = raw ? JSON.parse(raw) : {};
-  return token === state.pw;
+  const expected = String(state.pw || '');
+  const len = Math.max(token.length, expected.length);
+  let diff = token.length ^ expected.length;
+  for (let i = 0; i < len; i += 1) {
+    diff |= (token.charCodeAt(i) || 0) ^ (expected.charCodeAt(i) || 0);
+  }
+  return diff === 0;
 }
 
 // GET — returns all bookings; requires Bearer token

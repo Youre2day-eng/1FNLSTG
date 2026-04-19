@@ -44,11 +44,13 @@ export default function Booking() {
         time: selTime,
         payment: d.pay,
       });
-    } catch {}
+      setDoneMsg(svc.n + ' on ' + ds + ' at ' + selTime + '. Request sent — confirming within 24hrs.');
+    } catch {
+      setDoneMsg('We could not reach booking servers. Please retry or contact us directly to confirm this request.');
+    }
     const sub = encodeURIComponent('Booking: ' + svc.n + ' — ' + ds);
     const body = encodeURIComponent('Service: ' + svc.n + '\nPrice: ' + svc.p + '\nDate: ' + ds + '\nTime: ' + selTime + '\n\nPayment: ' + d.pay);
     if (d.email) window.location.href = 'mailto:' + d.email + '?subject=' + sub + '&body=' + body;
-    setDoneMsg(svc.n + ' on ' + ds + ' at ' + selTime + '. Request sent — confirming within 24hrs.');
     setDone(true);
   }
 
