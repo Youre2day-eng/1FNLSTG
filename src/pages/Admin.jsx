@@ -12,6 +12,8 @@ const TABS = [
   ['config', 'Configuration'],
 ];
 
+const BOOKING_FILTERS = ['all', 'pending', 'approved', 'denied'];
+
 const TEXT_FIELDS = [
   ['b1', 'Hero Line 1'], ['b2', 'Hero Line 2'], ['tag', 'Hero Tagline'],
   ['loc', 'Location'], ['copy', 'Footer Copy'], ['phone', 'Phone'], ['email', 'Email'],
@@ -68,6 +70,7 @@ export default function Admin() {
   const [creds, setCreds] = useState({ username: '', password: '' });
   const [working, setWorking] = useState({ ...DF });
   const [bookings, setBookings] = useState([]);
+  const [bookingFilter, setBookingFilter] = useState('pending');
   const [noteDrafts, setNoteDrafts] = useState({});
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -333,13 +336,19 @@ export default function Admin() {
         {tab === 'payments' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="border border-white/10 bg-card p-4">
-              <h2 className="text-xs uppercase tracking-widest text-gold mb-4">Service Pricing</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xs uppercase tracking-widest text-gold">Service Pricing</h2>
+                <button onClick={() => setModal({ type: 'price', index: -1, item: { n: '', p: '', d: '', c: working.cats?.[0] || 'Photography', i: [] }, isNew: true })} className="px-3 py-2 text-xs border border-white/20 hover:border-gold">Add Service</button>
+              </div>
               <div className="space-y-2 max-h-[60vh] overflow-auto pr-1">
                 {(working.svcs || []).map((svc, i) => (
-                  <button key={svc.n + i} onClick={() => setModal({ type: 'price', index: i, item: svc })} className="w-full text-left border border-white/10 p-3 hover:border-gold/50">
-                    <p className="text-sm">{svc.n}</p>
-                    <p className="text-xs text-gold">{svc.p}</p>
-                  </button>
+                  <div key={svc.n + i} className="border border-white/10 p-3 flex items-center justify-between gap-3 hover:border-gold/30">
+                    <button className="flex-1 text-left" onClick={() => setModal({ type: 'price', index: i, item: svc })}>
+                      <p className="text-sm">{svc.n}</p>
+                      <p className="text-xs text-gold">{svc.p}</p>
+                    </button>
+                    <button onClick={() => setWorking((w) => ({ ...w, svcs: (w.svcs || []).filter((_, idx) => idx !== i) }))} className="px-2 py-1 text-xs border border-red-300/40 text-red-200 shrink-0">Remove</button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -403,12 +412,17 @@ export default function Admin() {
 
         {tab === 'bookings' && (
           <div className="border border-white/10 bg-card p-4">
-            <h2 className="text-xs uppercase tracking-widest text-gold mb-4">Pending Booking Requests</h2>
-            {bookings.length === 0 ? (
-              <p className="text-sm text-muted">No bookings found.</p>
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <h2 className="text-xs uppercase tracking-widest text-gold mr-2">Booking Requests</h2>
+              {BOOKING_FILTERS.map((f) => (
+                <button key={f} onClick={() => setBookingFilter(f)} className={`px-3 py-1 text-[11px] uppercase tracking-widest border ${bookingFilter === f ? 'border-gold text-gold' : 'border-white/10 text-muted hover:text-offwhite'}`}>{f}</button>
+              ))}
+            </div>
+            {bookings.filter((b) => bookingFilter === 'all' || (b.status || 'pending') === bookingFilter).length === 0 ? (
+              <p className="text-sm text-muted">No {bookingFilter === 'all' ? '' : bookingFilter + ' '}bookings found.</p>
             ) : (
               <div className="space-y-3">
-                {bookings.map((b) => (
+                {bookings.filter((b) => bookingFilter === 'all' || (b.status || 'pending') === bookingFilter).map((b) => (
                   <div key={b.id} className="border border-white/10 p-3">
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                       <div>
@@ -493,6 +507,34 @@ export default function Admin() {
                   <input value={working.config?.apiKeys?.[k] || ''} onChange={(e) => setWorking((w) => ({ ...w, config: { ...(w.config || {}), apiKeys: { ...(w.config?.apiKeys || {}), [k]: e.target.value } } }))} className="bg-black border border-white/10 p-2" />
                 </label>
               ))}
+            </div>
+
+            <div className="lg:col-span-2 border border-white/10 bg-card p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xs uppercase tracking-widest text-gold">Tool Pages (Free Tools Nav)</h2>
+                <button onClick={() => setModal({ type: 'tool-page', item: { id: uid('tp'), slug: '', label: '', src: '', inNav: true, desc: '' }, isNew: true })} className="px-3 py-2 text-xs border border-white/20 hover:border-gold">Add Tool Page</button>
+              </div>
+              <div className="space-y-2">
+                {(working.toolPages || []).map((tp, i) => (
+                  <div key={tp.id || tp.slug + i} className="border border-white/10 p-3 flex flex-col md:flex-row md:items-center gap-3 md:justify-between">
+                    <div>
+                      <p className="text-sm">{tp.label || 'Untitled'}</p>
+                      <p className="text-xs text-muted">/tools/{tp.slug} · {tp.desc || ''}</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      <label className="flex items-center gap-1">
+                        <input type="checkbox" checked={tp.inNav !== false} onChange={(e) => {
+                          const next = [...(working.toolPages || [])];
+                          next[i] = { ...next[i], inNav: e.target.checked };
+                          setWorking((w) => ({ ...w, toolPages: next }));
+                        }} /> In Nav
+                      </label>
+                      <button onClick={() => setModal({ type: 'tool-page', item: tp, index: i })} className="px-2 py-1 border border-white/20">Edit</button>
+                      <button onClick={() => setWorking((w) => ({ ...w, toolPages: (w.toolPages || []).filter((_, idx) => idx !== i) }))} className="px-2 py-1 border border-red-300/40 text-red-200">Remove</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -616,7 +658,7 @@ export default function Admin() {
       )}
 
       {modal?.type === 'price' && (
-        <Modal title="Edit Service Price" onClose={() => setModal(null)}>
+        <Modal title={modal.isNew ? 'Add Service' : 'Edit Service Price'} onClose={() => setModal(null)}>
           <div className="space-y-3 text-xs">
             <input aria-label="Service Name" placeholder="Service Name" value={modal.item.n} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, n: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
             <input aria-label="Service Price" placeholder="Price" value={modal.item.p} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, p: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
@@ -624,9 +666,44 @@ export default function Admin() {
             <div className="flex justify-end gap-2">
               <button onClick={() => setModal(null)} className="px-3 py-2 border border-white/20">Cancel</button>
               <button onClick={() => {
+                if (!modal.item.n.trim()) {
+                  setError('Service name is required.');
+                  return;
+                }
                 const svcs = [...(working.svcs || [])];
-                svcs[modal.index] = modal.item;
+                if (modal.isNew) svcs.push(modal.item);
+                else svcs[modal.index] = modal.item;
                 setWorking((w) => ({ ...w, svcs }));
+                setError('');
+                setModal(null);
+              }} className="px-3 py-2 bg-gold text-black uppercase tracking-widest">Save</button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {modal?.type === 'tool-page' && (
+        <Modal title={modal.isNew ? 'Add Tool Page' : 'Edit Tool Page'} onClose={() => setModal(null)}>
+          <div className="space-y-3 text-xs">
+            <input placeholder="Label (e.g. Cypher)" value={modal.item.label} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, label: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
+            <input placeholder="Slug (e.g. cypher → /tools/cypher)" value={modal.item.slug} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') } }))} className="w-full bg-black border border-white/10 p-2" />
+            <input placeholder="Source path or URL (e.g. /tools/cypher.html)" value={modal.item.src} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, src: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
+            <input placeholder="Description" value={modal.item.desc || ''} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, desc: e.target.value } }))} className="w-full bg-black border border-white/10 p-2" />
+            <label className="flex items-center gap-2">
+              <input type="checkbox" checked={modal.item.inNav !== false} onChange={(e) => setModal((m) => ({ ...m, item: { ...m.item, inNav: e.target.checked } }))} /> Show in nav
+            </label>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setModal(null)} className="px-3 py-2 border border-white/20">Cancel</button>
+              <button onClick={() => {
+                if (!modal.item.label.trim() || !modal.item.slug.trim()) {
+                  setError('Tool page requires a label and slug.');
+                  return;
+                }
+                const next = [...(working.toolPages || [])];
+                if (modal.isNew) next.push(modal.item);
+                else next[modal.index] = modal.item;
+                setWorking((w) => ({ ...w, toolPages: next }));
+                setError('');
                 setModal(null);
               }} className="px-3 py-2 bg-gold text-black uppercase tracking-widest">Save</button>
             </div>
